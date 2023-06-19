@@ -1,8 +1,8 @@
 {
-  "id": "module",
-  "title": "New Module",
-  "description": "",
-  "version": "#{VERSION}#",
+  "id": "gpt-flavor-text",
+  "title": "GPT Flavor Text",
+  "description": "GPT-Powered Flavor Text for your FoundryVTT Game",
+  "version": "0.0.1",
   "library": "false",
   "manifestPlusVersion": "1.2.0",
   "compatibility": {
@@ -12,9 +12,9 @@
   },
   "authors": [
     {
-      "name": "The League of Extraordinary FVTT Developers",
-      "url": "https://github.com/League-of-Foundry-Developers",
-      "discord": "discordID#0001"
+      "name": "Rexmortus & Abrofi",
+      "url": "https://google.com",
+      "discord": "rexmortus & repat"
     }
   ],
   "relationships": {
