@@ -72,6 +72,17 @@ dnd5e.dropItemSheetData
 Hooks.on('dnd5e.rollAttack', async function(item, roll) {
     
     // Placeholders for the content we want to extract from the game object to construct our prompt 
+    // TODO Use a FormApplication to create a dialogue, allowing the GM to specify the details of the flavor text
+    // https://foundryvtt.wiki/en/development/guides/understanding-form-applications
+    // 1. Scene description
+    // At the moment, it will look for a journal page associated with the current scene. This won't always be available.
+    // 2. Actor - this will always be available due to the nature of it being hooked on an action
+    // 3. Target - targets may not always be idenitifed, and in some cases, there can be multiple targets. There should be a way
+    // for the GM to specific which are the targets of the attack
+    // I'm imaginging a list of checkboxes with each actor in the scene, ticking the box designates it as a target for the flavor text
+    // 4. Item is pretty straighforward 
+    // 5. Outcome. I think the final thing is a button with the outcome: critical miss, miss, hit, critical hit
+
     let _scene = game.scenes.active.journal.name;
     let _actor = item.actor.name;
     let _target = game.user.targets.first().document.name;
@@ -79,7 +90,44 @@ Hooks.on('dnd5e.rollAttack', async function(item, roll) {
 
     let promptText = 'In a ' + _scene + ', ' + _actor + ' attacks ' + _target + ' with a ' + _item;
 
-    respondTo(promptText + '. Provide a brief narration of this in the second-person for the player.', []);
+    new Dialog({
+        title: "GPT Flavor Text",
+        content: promptText,
+        buttons: {
+          criticalMiss: {
+            label: "Critical Miss",
+            callback: () => {
+                respondTo(promptText +  ', but critically misses. Provide a brief narration of this in the second-person for the player.', []);
+            }
+          },
+          miss: {
+            label: "Miss",
+            callback: () => {
+                respondTo(promptText +  ', but misses. Provide a brief narration of this in the second-person for the player.', []);
+            }
+          },
+          hit: {
+            label: "Hit",
+            callback: () => {
+                respondTo(promptText +  ', and hits. Provide a brief narration of this in the second-person for the player.', []);
+            }
+          },
+          criticalHit: {
+            label: "Critical Hit",
+            callback: () => {
+                respondTo(promptText +  ', and critically hits. Provide a brief narration of this in the second-person for the player.', []);
+            }
+          },
+          killingBlow: {
+            label: "Killing Blow",
+            callback: () => {
+                respondTo(promptText +  ', and deals a killing blow, slaying the enemy. Provide a brief narration of this in the second-person for the player.', []);
+            }
+          }
+        },
+          default: 'buttonA',
+      }).render(true)
+
 
 });
 
@@ -166,7 +214,7 @@ async function respondTo(question, users) {
 		const abbr = "By ChatGPT. Statements may be false";
 		await ChatMessage.create({
 			user: game.user.id,
-			speaker: ChatMessage.getSpeaker({alias: 'GPT'}),
+			speaker: ChatMessage.getSpeaker({alias: 'GPT-Flavor-Text'}),
 			content: `<abbr title="${abbr}" class="ask-chatgpt-to fa-solid fa-microchip-ai"></abbr>
 				<span class="ask-chatgpt-reply">${reply}</span>`,
 			whisper: users.map(u => u.id),
