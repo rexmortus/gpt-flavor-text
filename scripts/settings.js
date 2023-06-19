@@ -15,11 +15,7 @@ export const gameSystems = (() => {
 		'pf2e': {
 			name: 'Pathfinder Second Edition',
 			prompt: `You are a game master for a Pathfinder 2nd Edition game. ${genericPrompt} Properly format spells, monsters, conditions, and so on. ${formatPrompt}`,
-		},
-		'foundry-ironsworn': {
-			name: 'Ironsworn',
-			prompt: `You are a game master for an Ironsworn game. ${genericPrompt} Properly format moves, oracle tables, and so on. ${formatPrompt}`,
-		},
+		}
 	};
 })();
 

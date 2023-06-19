@@ -1,14 +1,109 @@
 import { registerSettings, moduleName } from './settings.js';
 import { getGptReplyAsHtml } from './gpt-api.js';
 
+// Initialise the module and register the module settings
 Hooks.once('init', async function() {
     console.log(`${moduleName} | Initialization`);
 	registerSettings();
 });
 
-Hooks.once('ready', async function() {
+/*
+
+TODO - implement hooks for each
+TODO - make hook registration a subsystem, where it only registers hooks that are appropriate for the game system you've selected
+
+--- Complete list of dnd5e hooks ---
+https://github.com/foundryvtt/dnd5e/wiki/Hooks
+
+dnd5e.preRollAbilityTest
+dnd5e.rollAbilityTest
+dnd5e.preRollAbilitySave
+dnd5e.rollAbilitySave
+dnd5e.preRollDeathSave
+dnd5e.rollDeathSave
+dnd5e.preRollSkill
+dnd5e.rollSkill
+dnd5e.preRollHitDie
+dnd5e.rollHitDie
+dnd5e.preRollClassHitPoints
+dnd5e.rollClasshitPoints
+dnd5e.preRollNPCHitPoints
+dnd5e.rollNPChitPoints
+dnd5e.preRollInitiative
+dnd5e.rollInitiative
+dnd5e.preShortRest
+dnd5e.preLongRest
+dnd5e.preRestCompleted
+dnd5e.restCompleted
+dnd5e.transformActor
+
+Advancement
+dnd5e.preAdvancementManagerRender
+dnd5e.preAdvancementManagerComplete
+dnd5e.advancementManagerComplete
+
+Item
+dnd5e.preUseItem
+dnd5e.preItemUsageConsumption
+dnd5e.itemUsageConsumption
+dnd5e.preDisplayCard
+dnd5e.displayCard
+dnd5e.useItem
+dnd5e.preRollAttack
+dnd5e.rollAttack
+dnd5e.preRollDamage
+dnd5e.rollDamage
+dnd5e.preRollFormula
+dnd5e.rollFormula
+dnd5e.preRollRecharge
+dnd5e.rollRecharge
+dnd5e.preRollToolCheck
+dnd5e.rollToolCheck
+
+Item Sheet
+dnd5e.dropItemSheetData
+
+*/
+
+// For now, we'll just implement two hooks
+
+// RollAttack
+// https://github.com/foundryvtt/dnd5e/wiki/Hooks#dnd5erollattack
+Hooks.on('dnd5e.rollAttack', async function(item, roll) {
+    
+    // Placeholders for the content we want to extract from the game object to construct our prompt 
+    let _scene = game.scenes.active.journal.name;
+    let _actor = item.actor.name;
+    let _target = game.user.targets.first().document.name;
+    let _item = item.name;
+
+    let promptText = 'In a ' + _scene + ', ' + _actor + ' attacks ' + _target + ' with a ' + _item;
+
+    respondTo(promptText + '. Provide a brief narration of this in the second-person for the player.', []);
 
 });
+
+// RollDamage
+// https://github.com/foundryvtt/dnd5e/wiki/Hooks#dnd5erolldamage
+Hooks.on('dnd5e.rollDamage', async function(item, roll) {
+    
+        // Placeholders for the content we want to extract from the game object to construct our prompt 
+        let _scene = game.scenes.active.journal.name;
+        let _actor = item.actor.name;
+        let _target = game.user.targets.first().document.name;
+        let _item = item.name;
+    
+        let promptText = 'In a ' + _scene + ', ' + _actor + ' hits ' + _target + ' with a ' + _item;
+    
+        respondTo(promptText + '. Provide a brief narration of this in the second-person for the player.', []);
+
+});
+
+// Vesitigial Chat window interface
+// Usage:
+// /? your prompt
+// OR
+// /w gpt your prompt
 
 Hooks.on('chatMessage', (chatLog, message, chatData) => {
 	const echoChatMessage = async (chatData, question) => {
