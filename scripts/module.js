@@ -1,4 +1,4 @@
-import { registerSettings, moduleName } from './settings.js';
+import { registerSettings } from './settings.js';
 import { getGptReplyAsHtml } from './gpt-api.js';
 import * as utils from './utils.js';
 
