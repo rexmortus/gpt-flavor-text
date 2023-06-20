@@ -1,5 +1,7 @@
 import { registerSettings, moduleName } from './settings.js';
 import { getGptReplyAsHtml } from './gpt-api.js';
+import { AttackRollFormApplication } from './lib/AttackRollFormApplication.js'
+
 import * as utils from './utils.js';
 
 // Initialise the module and register the module settings
@@ -7,7 +9,7 @@ Hooks.once('init', async function () {
   utils.log('Initialisation');
   registerSettings();
   // CONFIG.debug.hooks = true;
-});
+})
 
 /*
 
@@ -71,6 +73,7 @@ dnd5e.dropItemSheetData
 
 // RollAttack
 // https://github.com/foundryvtt/dnd5e/wiki/Hooks#dnd5erollattack
+
 Hooks.on('dnd5e.rollAttack', async function (item, roll) {
   // Placeholders for the content we want to extract from the game object to construct our prompt 
   // TODO Use a FormApplication to create a dialogue, allowing the GM to specify the details of the flavor text
@@ -83,7 +86,6 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
   // I'm imaginging a list of checkboxes with each actor in the scene, ticking the box designates it as a target for the flavor text
   // 4. Item is pretty straighforward 
   // 5. Outcome. I think the final thing is a button with the outcome: critical miss, miss, hit, critical hit
-
   // ! A source Item name and Actor name are the minimum requirements to generate a prompt.
   // i.e. GPT has to be able to know who is doing some thing and what they're doing it with (at least for an attack)
   // Targets and scene details are optional
@@ -124,45 +126,9 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
   if (game.settings.get(moduleName, 'rollAttack-autoPrompt') && roll && _targetAc) {
     respondTo(promptText + ', ' + getHitMissPrompt(roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', []);
     return;
+  } else {
+        new AttackRollFormApplication(game.scenes.active, item, game.user.targets, roll, promptText, respondTo, getHitMissPrompt).render(true);
   }
-
-  new Dialog({
-    title: "GPT Flavor Text",
-    content: promptText,
-    buttons: {
-      criticalMiss: {
-        label: "Critical Miss",
-        callback: () => {
-          respondTo(promptText + ', but critically misses. Provide a brief narration of this in the second-person for the player.', []);
-        }
-      },
-      miss: {
-        label: "Miss",
-        callback: () => {
-          respondTo(promptText + ', but misses. Provide a brief narration of this in the second-person for the player.', []);
-        }
-      },
-      hit: {
-        label: "Hit",
-        callback: () => {
-          respondTo(promptText + ', and hits. Provide a brief narration of this in the second-person for the player.', []);
-        }
-      },
-      criticalHit: {
-        label: "Critical Hit",
-        callback: () => {
-          respondTo(promptText + ', and critically hits. Provide a brief narration of this in the second-person for the player.', []);
-        }
-      },
-      killingBlow: {
-        label: "Killing Blow",
-        callback: () => {
-          respondTo(promptText + ', and deals a killing blow, slaying the enemy. Provide a brief narration of this in the second-person for the player.', []);
-        }
-      }
-    },
-    default: 'buttonA',
-  }).render(true)
 });
 
 /**
@@ -191,22 +157,6 @@ function getHitMissPrompt(roll, ac) {
   else { utils.logError('Could not find an appropriate string for ' + value); } // Shouldn't hit this, so logs as an error
   return str;
 }
-
-// RollDamage
-// https://github.com/foundryvtt/dnd5e/wiki/Hooks#dnd5erolldamage
-Hooks.on('dnd5e.rollDamage', async function (item, roll) {
-
-  // Placeholders for the content we want to extract from the game object to construct our prompt 
-  let _scene = game.scenes.active.journal.name;
-  let _actor = item.actor.name;
-  let _target = game.user.targets.first().document.name;
-  let _item = item.name;
-
-  let promptText = 'In a ' + _scene + ', ' + _actor + ' hits ' + _target + ' with a ' + _item;
-
-  respondTo(promptText + '. Provide a brief narration of this in the second-person for the player.', []);
-
-});
 
 // Vesitigial Chat window interface
 // Usage:

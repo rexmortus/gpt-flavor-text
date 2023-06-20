@@ -1,0 +1,37 @@
+<form class="flexcol">
+  <div class="form-group">
+    <label for="sceneInput">Scene</label>
+    <input type="text" name="sceneInput" id="scene" value="{{scene}}">
+  </div>
+  <div class="form-group">
+    <label for="actorInput">Actor</label>
+    <input type="text" name="actorInput" id="actor" value="{{actor}}">
+  </div>
+  <div class="form-group">
+    <label for="itemInput">Item</label>
+    <input type="text" name="itemInput" id="item" value="{{item}}">
+  </div>
+  <div class="form-group">
+    <label for="rollInput">Roll</label>
+    <input type="text" name="rollInput" id="roll" value="{{roll._total}}">
+  </div>
+  <div class="form-group">
+    <fieldset>
+        <legend>Target</legend>
+        {{#each unfriendlyTokens}}
+        <div>
+          <input type="radio" name="targetInput" id="target-{{this.name}}" value="{{this._id}}"><label for="target{{this.name}}">{{this.name}}</label>
+        </div>
+          {{/each}}
+    </fieldset>
+  </div>
+  <div class="form-group">
+    <label for="seasoning">Seasoning</label>
+    <textarea name="seasoning" id="extraFlavor"></textarea>
+  </div>
+  <footer class="sheet-footer flexrow">
+    <button type="submit" name="outcome">
+        Go!
+    </button>
+  </footer>
+</form>
