@@ -59,7 +59,7 @@ export const registerSettings = () => {
 		config: true,
 		type: Number,
 		default: 0,
-		range: {min: 0, max: 50},
+		range: { min: 0, max: 50 },
 	});
 
 	game.settings.register(moduleName, 'gameSystem', {
@@ -84,6 +84,17 @@ export const registerSettings = () => {
 		type: String,
 		default: gameSystems[game.settings.get(moduleName, 'gameSystem')].prompt,
 		onChange: () => console.log(`${moduleName} | ChatGPT prompt now is:`, getGamePromptSetting()),
+	});
+
+	// Flag to enable/disable auto prompts for attack rolls (will always show the dialog if disabled)
+	game.settings.register(moduleName, 'rollAttack-autoPrompt', {
+		name: 'Auto-prompts for attack rolls',
+		hint: 'Allow prompts to be automatically generated when enough info is available to do so.' +
+			'\n(Requires a target for the attack, and the target must have an AC value.)',
+		scope: 'world',
+		config: true,
+		type: Boolean,
+		default: true
 	});
 }
 
