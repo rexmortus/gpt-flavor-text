@@ -1,4 +1,4 @@
-import { registerSettings } from './settings.js';
+import { registerSettings, moduleName } from './settings.js';
 import { getGptReplyAsHtml } from './gpt-api.js';
 import * as utils from './utils.js';
 
@@ -121,7 +121,7 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
   let promptText = `${_actorName} attacks ${_targetName ? _targetName + ' ' : ''}using their ${_itemName} ${_sceneName ? 'in a/an ' + _sceneName : ''}`
 
   //let promptText = 'In a ' + _sceneName + ', ' + _actorName + ' attacks ' + _targetName + ' with a ' + _itemName;
-  if (roll && _targetAc) {
+  if (game.settings.get(moduleName, 'rollAttack-autoPrompt') && roll && _targetAc) {
     respondTo(promptText + ', ' + getHitMissPrompt(roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', []);
     return;
   }
