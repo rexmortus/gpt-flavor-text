@@ -1,13 +1,13 @@
-import { registerSettings } from './settings.js';
+import { registerSettings } from "./settings.js";
 //import * as lib from './lib/lib.js';
-import { hooks, utils } from './lib/index.js'
+import { hooks, utils } from "./lib/index.js";
 
 // Initialise the module and register the module settings
-Hooks.once('init', async function () {
-  utils.log('Initialisation');
-  registerSettings();
-  // CONFIG.debug.hooks = true;
-})
+Hooks.once("init", async function () {
+    utils.log("Initialisation");
+    registerSettings();
+    // CONFIG.debug.hooks = true;
+});
 
 /*
 
@@ -72,7 +72,7 @@ dnd5e.dropItemSheetData
 // RollAttack
 // https://github.com/foundryvtt/dnd5e/wiki/Hooks#dnd5erollattack
 
-Hooks.on('dnd5e.rollAttack', hooks.rollAttack.main);
+Hooks.on("dnd5e.rollAttack", hooks.rollAttack.main);
 
 // Vesitigial Chat window interface
 // Usage:
@@ -80,4 +80,4 @@ Hooks.on('dnd5e.rollAttack', hooks.rollAttack.main);
 // OR
 // /w gpt your prompt
 
-Hooks.on('chatMessage', hooks.chatMessage.main);
+Hooks.on("chatMessage", hooks.chatMessage.main);
