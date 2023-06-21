@@ -18,7 +18,7 @@
   <div class="form-group">
     <fieldset>
         <legend>Target</legend>
-        {{#each unfriendlyTokens}}
+        {{#each hostileTokens}}
         <div>
           <input type="radio" name="targetInput" id="target-{{this.name}}" value="{{this._id}}" required><label for="target{{this.name}}">{{this.name}}</label>
         </div>

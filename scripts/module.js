@@ -1,7 +1,7 @@
 import { registerSettings, moduleName } from './settings.js';
 import { getGptReplyAsHtml } from './gpt-api.js';
-import { AttackRollFormApplication } from './lib/AttackRollFormApplication.js'
-
+import { AttackRollFormApplication } from './prompts/AttackRollFormApplication.js'
+import * as lib from './lib/lib.js';
 import * as utils from './utils.js';
 
 // Initialise the module and register the module settings
@@ -220,17 +220,33 @@ Hooks.on('chatMessage', (chatLog, message, chatData) => {
 async function respondTo(question, users) {
   utils.logDebug('respondTo(question,users)', question, users);
   try {
+
+    // Create a chat message indicating that a request for flavor text is underway
+    let noticeMessage = await ChatMessage.create({
+      user:game.user.id,
+      speaker:ChatMessage.getSpeaker({ alias: 'GPT-Flavor-Text' }),
+      content: `<abbr class="ask-chatgpt-to fa-solid fa-spinner fa-spin"></abbr>
+      <span class="ask-chatgpt-reply">Fetching flavor text</span>`,
+      whisper: users.map(u => u.id)
+    }).then(function(result) {
+      return result;
+    });
+
     const reply = await getGptReplyAsHtml(question);
 
-    const abbr = "By ChatGPT. Statements may be false";
+    // Then, create the chat message that will display the text
     await ChatMessage.create({
       user: game.user.id,
       speaker: ChatMessage.getSpeaker({ alias: 'GPT-Flavor-Text' }),
-      content: `<abbr title="${abbr}" class="ask-chatgpt-to fa-solid fa-microchip-ai"></abbr>
+      content: `<abbr class="ask-chatgpt-to fa-solid fa-microchip-ai"></abbr>
 				<span class="ask-chatgpt-reply">${reply}</span>`,
       whisper: users.map(u => u.id),
       sound: CONFIG.sounds.notification,
+    }).then(function(){
+      // After the response from GPT, delete the noticeMessage
+      noticeMessage.delete()
     });
+
   } catch (e) {
     utils.logError('Failed to provide response.', e);
     ui.notifications.error(e.message, { permanent: true, console: false });

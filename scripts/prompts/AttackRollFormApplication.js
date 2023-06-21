@@ -1,24 +1,21 @@
-/**
- * Define your class that extends FormApplication
- */
 export class AttackRollFormApplication extends FormApplication {
     constructor(scene, item, targets, roll, promptText, respondTo, getHitMissPrompt) {
       super();
 
-        let unfriendlyTokens = game.scenes.active.tokens.contents.filter(token => {
-            if (token.disposition === -1) {
-                return true;
-            } else {
-                return false;
-            }
-        })
+        let hostileTokens = game.scenes.active.tokens.contents.filter(token => {
+          if (token.disposition === -1) {
+              return true;
+          } else {
+              return false;
+          }
+      })
 
         // Data 
         this.scene = scene;
         this.item = item;
         this.actor = item.actor;
         this.targets = targets;
-        this.unfriendlyTokens = unfriendlyTokens;
+        this.hostileTokens = hostileTokens;
         this.roll = roll;
         this.promptText = promptText
         
@@ -31,7 +28,7 @@ export class AttackRollFormApplication extends FormApplication {
       return mergeObject(super.defaultOptions, {
         classes: ['form'],
         popOut: true,
-        template: 'modules/gpt-flavor-text/scripts/lib/AttackRollFormApplication.html',
+        template: 'modules/gpt-flavor-text/scripts/prompts/AttackRollFormApplication.html',
         id: 'gpt-flavor-text',
         title: 'GPT Flavor Text',
       });
@@ -44,7 +41,7 @@ export class AttackRollFormApplication extends FormApplication {
         targets: this.targets,
         item: this.item.name,
         roll: this.roll,
-        unfriendlyTokens: this.unfriendlyTokens
+        hostileTokens: this.hostileTokens
       };
     }
   
