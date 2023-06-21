@@ -1,7 +1,8 @@
-export class AttackRollFormApplication extends FormApplication {
+export class AttackRollPromptFormApplication extends FormApplication {
     constructor(scene, item, targets, roll, promptText, respondTo, getHitMissPrompt) {
       super();
 
+        // TODO move this into a utility function
         let hostileTokens = game.scenes.active.tokens.contents.filter(token => {
           if (token.disposition === -1) {
               return true;
@@ -20,6 +21,7 @@ export class AttackRollFormApplication extends FormApplication {
         this.promptText = promptText
         
         // Callback functions
+        // TODO move these into utility functions
         this.respondTo = respondTo;
         this.getHitMissPrompt = getHitMissPrompt;
     }
@@ -28,7 +30,7 @@ export class AttackRollFormApplication extends FormApplication {
       return mergeObject(super.defaultOptions, {
         classes: ['form'],
         popOut: true,
-        template: 'modules/gpt-flavor-text/scripts/prompts/AttackRollFormApplication.html',
+        template: 'modules/gpt-flavor-text/scripts/prompts/AttackRollPromptFormApplication.html',
         id: 'gpt-flavor-text',
         title: 'GPT Flavor Text',
       });
@@ -58,6 +60,10 @@ export class AttackRollFormApplication extends FormApplication {
             return false;
         }
       })
+
+      // TODO
+      // Move all the below into its own utility function
+      // It should take the actor, target, scene, item
 
       // Get the new target actor
       let target = game?.scenes?.active?.tokens?.get(formData.targetInput)?.actor;

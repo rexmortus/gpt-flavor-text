@@ -37,3 +37,11 @@ Incorporate the following into the prompts:
 - 
 
 # Contested Rolls
+
+# Dev Stuff
+
+- Utils
+    - Get the Gamemaster user
+    - Get all the hostile tokens from the current scene
+    - Get all the friendly tokens from the current scene
+       

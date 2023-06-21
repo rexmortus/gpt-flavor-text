@@ -1,6 +1,6 @@
 import { registerSettings, moduleName } from './settings.js';
 import { getGptReplyAsHtml } from './gpt-api.js';
-import { AttackRollFormApplication } from './prompts/AttackRollFormApplication.js'
+import { AttackRollPromptFormApplication } from './prompts/AttackRollPromptFormApplication.js'
 import * as lib from './lib/lib.js';
 import * as utils from './utils.js';
 
@@ -91,6 +91,7 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
   // Targets and scene details are optional
 
   // Get the GM user, making sure the messages are whispered to them
+  // TODO make some utility functions that are available across the module to do this 
   let gmUser = game.users.filter(user => {
     if (user.isGM) {
         return true;
@@ -136,7 +137,7 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
     respondTo(promptText + ', ' + getHitMissPrompt(roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', gmUser);
     return;
   } else {
-        new AttackRollFormApplication(game.scenes.active, item, game.user.targets, roll, promptText, respondTo, getHitMissPrompt).render(true);
+        new AttackRollPromptFormApplication(game.scenes.active, item, game.user.targets, roll, promptText, respondTo, getHitMissPrompt).render(true);
   }
 });
 
