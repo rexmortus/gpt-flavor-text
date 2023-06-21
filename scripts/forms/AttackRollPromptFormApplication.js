@@ -1,5 +1,5 @@
 export class AttackRollPromptFormApplication extends FormApplication {
-    constructor(scene, item, targets, roll, promptText, respondTo, getHitMissPrompt) {
+    constructor(scene, item, targets, roll, respondTo, createAttackRollGPTPrompt) {
       super();
 
         // TODO move this into a utility function
@@ -18,19 +18,18 @@ export class AttackRollPromptFormApplication extends FormApplication {
         this.targets = targets;
         this.hostileTokens = hostileTokens;
         this.roll = roll;
-        this.promptText = promptText
         
         // Callback functions
         // TODO move these into utility functions
         this.respondTo = respondTo;
-        this.getHitMissPrompt = getHitMissPrompt;
+        this.createAttackRollGPTPrompt = createAttackRollGPTPrompt;
     }
   
     static get defaultOptions() {
       return mergeObject(super.defaultOptions, {
         classes: ['form'],
         popOut: true,
-        template: 'modules/gpt-flavor-text/scripts/prompts/AttackRollPromptFormApplication.html',
+        template: 'modules/gpt-flavor-text/scripts/forms/AttackRollPromptFormApplication.html',
         id: 'gpt-flavor-text',
         title: 'GPT Flavor Text',
       });
@@ -61,19 +60,9 @@ export class AttackRollPromptFormApplication extends FormApplication {
         }
       })
 
-      // TODO
-      // Move all the below into its own utility function
-      // It should take the actor, target, scene, item
-
       // Get the new target actor
       let target = game?.scenes?.active?.tokens?.get(formData.targetInput)?.actor;
-      
-      // Get target AC of user-selected 
-      let _targetAc = target?.system?.attributes?.ac?.value;
 
-      // Regenerate the prompt text using the formData
-      let promptText = `${this.actor.name} attacks ${target.name ? target.name + ' ' : ''}using their ${this.item.name} ${this.scene.journal.name ? 'in a/an ' + this.scene.journal.name : ''}`
-
-      this.respondTo(promptText + ', ' + this.getHitMissPrompt(this.roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', gmUser);
+      this.respondTo(this.createAttackRollGPTPrompt(this.actor, this.item, target, this.scene, this.roll), gmUser);
     }
   }

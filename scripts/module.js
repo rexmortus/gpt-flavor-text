@@ -1,8 +1,9 @@
 import { registerSettings, moduleName } from './settings.js';
 import { getGptReplyAsHtml } from './gpt-api.js';
-import { AttackRollPromptFormApplication } from './prompts/AttackRollPromptFormApplication.js'
+import { AttackRollPromptFormApplication } from './forms/AttackRollPromptFormApplication.js'
 import * as lib from './lib/lib.js';
-import * as utils from './utils.js';
+import * as utils from './lib/utils.js';
+import { createAttackRollGPTPrompt } from './lib/gpt-prompt.js';
 
 // Initialise the module and register the module settings
 Hooks.once('init', async function () {
@@ -99,74 +100,18 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
         return false;
     }
   })
+  
+  // item and roll are provided by the hook
+  let actor = item?.actor;
+  let target = game?.user?.targets?.first()?.actor;
+  let scene = game?.scenes?.active;
 
-  let _actorName = item?.actor?.name;
-  let _itemName = item?.name;
-
-  // If the actor or item aren't defined then we can just skip everything else
-  if (!_itemName) {
-    utils.logError('No attack item / spell available.')
-    return;
-  }
-  if (!_actorName) {
-    utils.logError('No actor defined.');
-    return;
-  }
-
-  let _sceneName = game?.scenes?.active?.journal?.name;
-  let _targetName = game?.user?.targets?.first()?.document?.name;
-  let _targetAc = game?.user?.targets?.first()?.document?._actor?.system?.attributes?.ac?.value;
-
-  // Guards with console errors
-  if (!_targetName) {
-    // Lack of target context shouldn't stop a prompt. Just log error for now
-    // TODO ? Add settings flag to suppress errors and warnings
-    utils.logError('No targets selected.')
-  }
-  if (!_sceneName) {
-    // Lack of scene context shouldn't stop a prompt. Just log error for now
-    // TODO ? Add settings flag to suppress errors and warnings
-    utils.logError('No scene defined.');
-  }
-
-  // let promptText = `${_actorName} attacks ${_targetName} using their ${_itemName} in a/an ${_sceneName}`
-  let promptText = `${_actorName} attacks ${_targetName ? _targetName + ' ' : ''}using their ${_itemName} ${_sceneName ? 'in a/an ' + _sceneName : ''}`
-
-  //let promptText = 'In a ' + _sceneName + ', ' + _actorName + ' attacks ' + _targetName + ' with a ' + _itemName;
-  if (game.settings.get(moduleName, 'rollAttack-autoPrompt') && roll && _targetAc) {
-    respondTo(promptText + ', ' + getHitMissPrompt(roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', gmUser);
-    return;
+  if (game.settings.get(moduleName, 'rollAttack-autoPrompt') && roll && target) {
+    respondTo(createAttackRollGPTPrompt(actor, item, target, scene, roll), gmUser);
   } else {
-        new AttackRollPromptFormApplication(game.scenes.active, item, game.user.targets, roll, promptText, respondTo, getHitMissPrompt).render(true);
+    new AttackRollPromptFormApplication(game.scenes.active, item, game.user.targets, roll, respondTo, createAttackRollGPTPrompt).render(true);
   }
 });
-
-/**
- * 
- * @param     {D20Roll}   roll  The roll object for the attack. Used to check critical hit/miss as well as the roll value.
- * @param     {number}    ac    The target's AC value.
- * @returns   {string}    Modifier for the prompt describing a hit/miss and the confidence of it
- */
-function getHitMissPrompt(roll, ac) {
-  // Handle criticals first
-  if (roll?.isCritical) {
-    if (roll?.isFumble) { return 'but critically misses in a dramatic fashion'; }
-    else { return 'and critically hits in a dramatic fashion'; }
-  }
-  // Return a string based on the hit or miss confidence
-  let value = roll.total - ac;
-  var str = '';
-  if (value >= 10) { str = 'and lands a very confident hit'; }
-  else if (value >= 5) { str = 'and hits'; }
-  else if (value >= 3) { str = 'and just barely lands a hit'; }
-  else if (value >= 0) { str = 'and lands a hit purely out to luck' }
-  else if (value > -3) { str = 'but barely misses due to slight ineptness or a hint of bad luck' }
-  else if (value > -5) { str = 'but misses with ineptness or bad luck' }
-  else if (value > -10) { str = 'but misses with dramatic ineptness or dramatically bad luck' }
-  else if (value <= -10) { str = 'but completely misses' }
-  else { utils.logError('Could not find an appropriate string for ' + value); } // Shouldn't hit this, so logs as an error
-  return str;
-}
 
 // Vesitigial Chat window interface
 // Usage:

@@ -1,5 +1,5 @@
 
-import { moduleName } from './settings.js';
+import { moduleName } from '../settings.js';
 /** UTILITY FUNCTIONS **/
 
 // Standardised console logging to allow us to filter console messages from this module
