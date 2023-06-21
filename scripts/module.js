@@ -90,6 +90,15 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
   // i.e. GPT has to be able to know who is doing some thing and what they're doing it with (at least for an attack)
   // Targets and scene details are optional
 
+  // Get the GM user, making sure the messages are whispered to them
+  let gmUser = game.users.filter(user => {
+    if (user.isGM) {
+        return true;
+    } else {
+        return false;
+    }
+  })
+
   let _actorName = item?.actor?.name;
   let _itemName = item?.name;
 
@@ -124,7 +133,7 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
 
   //let promptText = 'In a ' + _sceneName + ', ' + _actorName + ' attacks ' + _targetName + ' with a ' + _itemName;
   if (game.settings.get(moduleName, 'rollAttack-autoPrompt') && roll && _targetAc) {
-    respondTo(promptText + ', ' + getHitMissPrompt(roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', []);
+    respondTo(promptText + ', ' + getHitMissPrompt(roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', gmUser);
     return;
   } else {
         new AttackRollFormApplication(game.scenes.active, item, game.user.targets, roll, promptText, respondTo, getHitMissPrompt).render(true);

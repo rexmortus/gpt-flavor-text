@@ -8,7 +8,7 @@ export class AttackRollFormApplication extends FormApplication {
           } else {
               return false;
           }
-      })
+        })
 
         // Data 
         this.scene = scene;
@@ -51,6 +51,14 @@ export class AttackRollFormApplication extends FormApplication {
   
     async _updateObject(event, formData) {
 
+      let gmUser = game.users.filter(user => {
+        if (user.isGM) {
+            return true;
+        } else {
+            return false;
+        }
+      })
+
       // Get the new target actor
       let target = game?.scenes?.active?.tokens?.get(formData.targetInput)?.actor;
       
@@ -60,6 +68,6 @@ export class AttackRollFormApplication extends FormApplication {
       // Regenerate the prompt text using the formData
       let promptText = `${this.actor.name} attacks ${target.name ? target.name + ' ' : ''}using their ${this.item.name} ${this.scene.journal.name ? 'in a/an ' + this.scene.journal.name : ''}`
 
-      this.respondTo(promptText + ', ' + this.getHitMissPrompt(this.roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', []);
+      this.respondTo(promptText + ', ' + this.getHitMissPrompt(this.roll, _targetAc) + '. Provide a brief narration of this in the second-person for the player.', gmUser);
     }
   }
