@@ -1,47 +1,35 @@
-# TODO
+# GPT-Flavor-Text
+### TODO
 
-# General
+- General - Race  
+- General - Class  
+- General - HP %  
+- General - Status Effects  
 
-Incorporate the following into the prompts:
+- Combat - Grapple  
+- Combat - Prone  
+- Combat - Dodge  
+- Combat - Special Attacks  
+- Combat - Class Features  
 
-- Race
-- Class
-- HP %
-- Status Effects
+- Items - Consuming potions  
+- Items - Using scrolls  
 
-# Combat
+- Spells - Casting Spells  
+- Spells - Preparing Spells  
 
-- Grapple
-- Prone
-- Dodge
-- Special Attacks
-- Class Features
+- Skill Rolls - Inside combat  
+- Skill Rolls - Outside combat  
 
-# Items
+- Saving Throws
 
-- Consuming potions
-- Using scrolls
+- Contested Rolls
 
-# Spells
+- Dev Stuff - Utils  
+- Dev Stuff - Get the Gamemaster user  
+- Dev Stuff - Get all the hostile tokens from the current scene  
+- Dev Stuff - Get all the friendly tokens from the current scene  
 
-- Casting Spells
-- Preparing Spells
+### In Progress
 
-# Skill Rolls
-
-- Using a skill inside combat
-- Using a skill outside combat
-
-# Saving Throws
-
-- 
-
-# Contested Rolls
-
-# Dev Stuff
-
-- Utils
-    - Get the Gamemaster user
-    - Get all the hostile tokens from the current scene
-    - Get all the friendly tokens from the current scene
-       
+### Done

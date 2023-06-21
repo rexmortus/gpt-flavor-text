@@ -1,16 +1,13 @@
-import { registerSettings, moduleName } from './settings.js';
-import { getGptReplyAsHtml } from './gpt-api.js';
-import { AttackRollPromptFormApplication } from './forms/AttackRollPromptFormApplication.js'
-import * as lib from './lib/lib.js';
-import * as utils from './lib/utils.js';
-import { createAttackRollGPTPrompt } from './lib/gpt-prompt.js';
+import { registerSettings } from "./settings.js";
+//import * as lib from './lib/lib.js';
+import { hooks, utils } from "./lib/index.js";
 
 // Initialise the module and register the module settings
-Hooks.once('init', async function () {
-  utils.log('Initialisation');
-  registerSettings();
-  // CONFIG.debug.hooks = true;
-})
+Hooks.once("init", async function () {
+    utils.log("Initialisation");
+    registerSettings();
+    // CONFIG.debug.hooks = true;
+});
 
 /*
 
@@ -75,43 +72,7 @@ dnd5e.dropItemSheetData
 // RollAttack
 // https://github.com/foundryvtt/dnd5e/wiki/Hooks#dnd5erollattack
 
-Hooks.on('dnd5e.rollAttack', async function (item, roll) {
-  // Placeholders for the content we want to extract from the game object to construct our prompt 
-  // TODO Use a FormApplication to create a dialogue, allowing the GM to specify the details of the flavor text
-  // https://foundryvtt.wiki/en/development/guides/understanding-form-applications
-  // 1. Scene description
-  // At the moment, it will look for a journal page associated with the current scene. This won't always be available.
-  // 2. Actor - this will always be available due to the nature of it being hooked on an action
-  // 3. Target - targets may not always be idenitifed, and in some cases, there can be multiple targets. There should be a way
-  // for the GM to specific which are the targets of the attack
-  // I'm imaginging a list of checkboxes with each actor in the scene, ticking the box designates it as a target for the flavor text
-  // 4. Item is pretty straighforward 
-  // 5. Outcome. I think the final thing is a button with the outcome: critical miss, miss, hit, critical hit
-  // ! A source Item name and Actor name are the minimum requirements to generate a prompt.
-  // i.e. GPT has to be able to know who is doing some thing and what they're doing it with (at least for an attack)
-  // Targets and scene details are optional
-
-  // Get the GM user, making sure the messages are whispered to them
-  // TODO make some utility functions that are available across the module to do this 
-  let gmUser = game.users.filter(user => {
-    if (user.isGM) {
-        return true;
-    } else {
-        return false;
-    }
-  })
-  
-  // item and roll are provided by the hook
-  let actor = item?.actor;
-  let target = game?.user?.targets?.first()?.actor;
-  let scene = game?.scenes?.active;
-
-  if (game.settings.get(moduleName, 'rollAttack-autoPrompt') && roll && target) {
-    respondTo(createAttackRollGPTPrompt(actor, item, target, scene, roll), gmUser);
-  } else {
-    new AttackRollPromptFormApplication(game.scenes.active, item, game.user.targets, roll, respondTo, createAttackRollGPTPrompt).render(true);
-  }
-});
+Hooks.on("dnd5e.rollAttack", hooks.rollAttack.main);
 
 // Vesitigial Chat window interface
 // Usage:
@@ -119,91 +80,4 @@ Hooks.on('dnd5e.rollAttack', async function (item, roll) {
 // OR
 // /w gpt your prompt
 
-Hooks.on('chatMessage', (chatLog, message, chatData) => {
-  const echoChatMessage = async (chatData, question) => {
-    const toGptHtml = '<span class="ask-chatgpt-to">To: GPT</span><br>';
-    chatData.content = `${toGptHtml}${question.replace(/\n/g, "<br>")}`;
-    await ChatMessage.create(chatData);
-  };
-
-  let match;
-
-  const reWhisper = new RegExp(/^(\/w(?:hisper)?\s)(\[(?:[^\]]+)\]|(?:[^\s]+))\s*([^]*)/, "i");
-  match = message.match(reWhisper);
-  if (match) {
-    const gpt = 'gpt';
-    const userAliases = match[2].replace(/[[\]]/g, "").split(",").map(n => n.trim());
-    const question = match[3].trim();
-    if (userAliases.some(u => u.toLowerCase() === gpt)) {
-      const users = userAliases
-        .filter(n => n.toLowerCase() !== gpt)
-        .reduce((arr, n) => arr.concat(ChatMessage.getWhisperRecipients(n)), [game.user]);
-
-      // same error logic as in Foundry
-      if (!users.length) throw new Error(game.i18n.localize("ERROR.NoTargetUsersForWhisper"));
-      if (users.some(u => !u.isGM && u.id != game.user.id) && !game.user.can("MESSAGE_WHISPER")) {
-        throw new Error(game.i18n.localize("ERROR.CantWhisper"));
-      }
-
-      chatData.type = CONST.CHAT_MESSAGE_TYPES.WHISPER;
-      chatData.whisper = users.map(u => u.id);
-      chatData.sound = CONFIG.sounds.notification;
-      echoChatMessage(chatData, question);
-
-      respondTo(question, users);
-
-      // prevent further processing, since an unknown whisper target would trigger an error
-      return false;
-    }
-  }
-
-  const rePublic = new RegExp(/^(\/\?\s)\s*([^]*)/, "i");
-  match = message.match(rePublic);
-  if (match) {
-    const question = match[2].trim();
-    echoChatMessage(chatData, question);
-
-    respondTo(question, []);
-
-    // prevent further processing, since an unknown command would trigger an error
-    return false;
-  }
-
-  return true;
-});
-
-async function respondTo(question, users) {
-  utils.logDebug('respondTo(question,users)', question, users);
-  try {
-
-    // Create a chat message indicating that a request for flavor text is underway
-    let noticeMessage = await ChatMessage.create({
-      user:game.user.id,
-      speaker:ChatMessage.getSpeaker({ alias: 'GPT-Flavor-Text' }),
-      content: `<abbr class="ask-chatgpt-to fa-solid fa-spinner fa-spin"></abbr>
-      <span class="ask-chatgpt-reply">Fetching flavor text</span>`,
-      whisper: users.map(u => u.id)
-    }).then(function(result) {
-      return result;
-    });
-
-    const reply = await getGptReplyAsHtml(question);
-
-    // Then, create the chat message that will display the text
-    await ChatMessage.create({
-      user: game.user.id,
-      speaker: ChatMessage.getSpeaker({ alias: 'GPT-Flavor-Text' }),
-      content: `<abbr class="ask-chatgpt-to fa-solid fa-microchip-ai"></abbr>
-				<span class="ask-chatgpt-reply">${reply}</span>`,
-      whisper: users.map(u => u.id),
-      sound: CONFIG.sounds.notification,
-    }).then(function(){
-      // After the response from GPT, delete the noticeMessage
-      noticeMessage.delete()
-    });
-
-  } catch (e) {
-    utils.logError('Failed to provide response.', e);
-    ui.notifications.error(e.message, { permanent: true, console: false });
-  }
-}
+Hooks.on("chatMessage", hooks.chatMessage.main);
