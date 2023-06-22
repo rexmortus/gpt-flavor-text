@@ -31,7 +31,7 @@ export async function main(item, roll) {
 
     if (game.settings.get(moduleName, "rollAttack-autoPrompt") && roll && target) {
         let prompt = createPrompt(actor, item, target, scene, roll);
-        chat.respondTo(prompt, gmUser);
+        chat.respondTo(prompt, [gmUser]);
     } else {
         new AttackRollPromptFormApplication(
             game.scenes.active,
