@@ -10,7 +10,7 @@ export async function respondTo(prompt, users) {
             user: game.user.id,
             speaker: ChatMessage.getSpeaker({ alias: "GPT-Flavor-Text" }),
             content: `<abbr class="ask-chatgpt-to fa-solid fa-spinner fa-spin"></abbr>
-        <span class="ask-chatgpt-reply">Fetching flavor text</span>`,
+        <span class="ask-chatgpt-reply">Fetching flavor text</span><p><small>${prompt}</small></p>`,
             whisper: users.map((u) => u.id),
         }).then(function (result) {
             return result;

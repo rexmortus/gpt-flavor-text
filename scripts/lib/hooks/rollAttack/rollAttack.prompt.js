@@ -4,7 +4,7 @@
  */
 import { utils } from "../../index.js";
 
-const promptInstructions = ". Provide a brief narration of this in the second-person for the player.";
+const promptInstructions = "Provide a brief narration of this in the second-person for the player.";
 
 export const createPrompt = (actor, item, target, scene, roll) => {
     let _actorName = actor?.name;
@@ -35,9 +35,9 @@ export const createPrompt = (actor, item, target, scene, roll) => {
         utils.logError("No scene defined.");
     }
 
-    let prompt = `${_actorName} attacks ${_targetName ? _targetName + " " : ""} using their ${_itemName} ${
+    let prompt = `${_actorName}, ${getHealthPrompt(actor)} ${getEffectsPrompt(actor)}, attacks ${_targetName}, ${getHealthPrompt(target)} ${getEffectsPrompt(target)}, using their ${_itemName} ${
         _sceneName ? "in a/an " + _sceneName : ", "
-    } ${getHitMissPrompt(roll, target)} ${promptInstructions}`;
+    } ${getHitMissPrompt(roll, target)}. ${promptInstructions}`;
 
     utils.log(prompt);
 
@@ -85,4 +85,57 @@ function getHitMissPrompt(roll, target) {
         utils.logError("Could not find an appropriate string for " + value);
     } // Shouldn't hit this, so logs as an error
     return str;
+}
+
+/**
+ *
+ * @param     {actor}    actor    The actor
+ * @returns   {string}    Modifier for the prompt describing a relevative health of the actor
+ */
+function getHealthPrompt(actor) {
+
+    let _actorTotalHP = actor?.system?.attributes?.hp?.max;
+    let _actorCurrentHP = actor?.system?.attributes?.hp?.value;
+
+    let percentage = _actorCurrentHP / _actorTotalHP;
+    var str = "";
+
+    if (percentage == 1) {
+        str = "in perfect health"
+    } else if (percentage >= 0.80) {
+        str = "in excellent health"
+    } else if (percentage >= 0.60 && percentage < 0.80) {
+        str = "in good health"
+    } else if (percentage >= 0.40 && percentage < 0.60) {
+        str = "in middling health"
+    } else if (percentage >= 0.20 && percentage < 0.40) {
+        str = "in poor health"
+    } else if (percentage >= 0.00 && percentage < 0.20) {
+        str = "in terrible health"
+    } else {
+        utils.logError("Could not find an appropriate string for " + percentage)
+    }
+    return str;
+
+}
+
+/**
+ *
+ * @param     {actor}    actor    The actor
+ * @returns   {string}    Modifier for the prompt describing a relevative health of the actor
+ */
+function getEffectsPrompt(actor) {
+
+    var str = "(with status effects: ";
+    
+    if (actor.effects.contents.length == 0) {
+       return ""; 
+    } else {
+        actor.effects.forEach(function(effect) {
+            str += `${effect.label}, `
+        });
+    }
+
+    return str += ')';
+
 }
