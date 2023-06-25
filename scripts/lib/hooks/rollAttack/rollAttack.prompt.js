@@ -35,9 +35,11 @@ export const createPrompt = (actor, item, target, scene, roll) => {
         utils.logError("No scene defined.");
     }
 
-    let prompt = `${_actorName}, ${getHealthPrompt(actor)} ${getEffectsPrompt(actor)}, attacks ${_targetName}, ${getHealthPrompt(target)} ${getEffectsPrompt(target)}, using their ${_itemName} ${
-        _sceneName ? "in a/an " + _sceneName : ", "
-    } ${getHitMissPrompt(roll, target)}. ${promptInstructions}`;
+    let prompt =
+        `${_actorName}, ${getHealthPrompt(actor)} ${getEffectsPrompt(actor)}` + // Main actor details
+        `, attacks ${_targetName}, ${getHealthPrompt(target)} ${getEffectsPrompt(target)}` + // Target details
+        `, using their ${_itemName} ${_sceneName ? "in a/an " + _sceneName : ", "}` + // Item and possible scene
+        `${getHitMissPrompt(roll, target)}. ${promptInstructions}`; // Hit/miss prompt and final instructions
 
     utils.log(prompt);
 
@@ -46,9 +48,9 @@ export const createPrompt = (actor, item, target, scene, roll) => {
 
 /**
  *
- * @param     {D20Roll}   roll  The roll object for the attack. Used to check critical hit/miss as well as the roll value.
- * @param     {number}    target    The target
- * @returns   {string}    Modifier for the prompt describing a hit/miss and the confidence of it
+ * @param    {D20Roll}  roll    The roll object for the attack. Used to check critical hit/miss as well as the roll value.
+ * @param    {number}   target  The target
+ * @returns  {string}           Modifier for the prompt describing a hit/miss and the confidence of it
  */
 function getHitMissPrompt(roll, target) {
     let _targetAc = target?.system?.attributes?.ac?.value;
@@ -89,11 +91,10 @@ function getHitMissPrompt(roll, target) {
 
 /**
  *
- * @param     {actor}    actor    The actor
- * @returns   {string}    Modifier for the prompt describing a relevative health of the actor
+ * @param     {actor}   actor  The actor
+ * @returns   {string}         Modifier for the prompt describing a relevative health of the actor
  */
 function getHealthPrompt(actor) {
-
     let _actorTotalHP = actor?.system?.attributes?.hp?.max;
     let _actorCurrentHP = actor?.system?.attributes?.hp?.value;
 
@@ -101,41 +102,40 @@ function getHealthPrompt(actor) {
     var str = "";
 
     if (percentage == 1) {
-        str = "in perfect health"
-    } else if (percentage >= 0.80) {
-        str = "in excellent health"
-    } else if (percentage >= 0.60 && percentage < 0.80) {
-        str = "in good health"
-    } else if (percentage >= 0.40 && percentage < 0.60) {
-        str = "in middling health"
-    } else if (percentage >= 0.20 && percentage < 0.40) {
-        str = "in poor health"
-    } else if (percentage >= 0.00 && percentage < 0.20) {
-        str = "in terrible health"
+        str = "in perfect health";
+    } else if (percentage >= 0.8) {
+        str = "in excellent health";
+    } else if (percentage >= 0.6 && percentage < 0.8) {
+        str = "in good health";
+    } else if (percentage >= 0.4 && percentage < 0.6) {
+        str = "in middling health";
+    } else if (percentage >= 0.2 && percentage < 0.4) {
+        str = "in poor health";
+    } else if (percentage >= 0.0 && percentage < 0.2) {
+        str = "in terrible health";
     } else {
-        utils.logError("Could not find an appropriate string for " + percentage)
+        utils.logError("Could not find an appropriate string for " + percentage);
     }
     return str;
-
 }
 
 /**
  *
- * @param     {actor}    actor    The actor
- * @returns   {string}    Modifier for the prompt describing a relevative health of the actor
+ * @param    {actor}   actor  The actor
+ * @returns  {string}         Modifier for the prompt describing a relevative health of the actor
  */
 function getEffectsPrompt(actor) {
-
-    var str = "(with status effects: ";
-    
-    if (actor.effects.contents.length == 0) {
-       return ""; 
-    } else {
-        actor.effects.forEach(function(effect) {
-            str += `${effect.label}, `
-        });
+    // Guard for any failures (null actor, null temp effects, or 0 length array of effects)
+    if (!actor?.temporaryEffects?.length) {
+        return "";
     }
 
-    return str += ')';
-
+    var str = "(who is currently ";
+    actor.temporaryEffects.forEach((effect, index) => {
+        str +=
+            `${index > 0 ? ", " : ""}` + // hope nobody minds an Oxford comma
+            `${index === actor.temporaryEffects.length - 1 ? "and " : ""}` +
+            `${effect.label.toLowerCase()}`;
+    });
+    return (str += ")");
 }
