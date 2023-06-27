@@ -18,7 +18,8 @@ Hooks.once('getChatLogEntryContext', function(html, entries) {
         name: "Regenerate",
         icon: "<i class='fa fa-refresh' aria-hidden='true'></i>",
         callback: function(menuItem) {
-            console.log('a thing')
+            let originalPrompt = game.messages.get(menuItem.data().messageId).flags?.['gpt-flavor-text']?.prompt
+            console.log(originalPrompt)
         },
         condition: function(menuItem) {
             return game.messages.get(menuItem.data().messageId).flags?.['gpt-flavor-text']?.gpt
@@ -30,7 +31,8 @@ Hooks.once('getChatLogEntryContext', function(html, entries) {
         name: "Edit Prompt",
         icon: "<i class='fa fa-pencil' aria-hidden='true'></i>",
         callback: function(menuItem) {
-            console.log('a thing')
+            let originalPrompt = game.messages.get(menuItem.data().messageId).flags?.['gpt-flavor-text']?.prompt
+            console.log(originalPrompt)
         },
         condition: function(menuItem) {
             return game.messages.get(menuItem.data().messageId).flags?.['gpt-flavor-text']?.gpt
