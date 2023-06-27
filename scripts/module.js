@@ -9,6 +9,36 @@ Hooks.once("init", async function () {
     // CONFIG.debug.hooks = true;
 });
 
+// Register result regeneration for chatmessages  
+
+Hooks.once('getChatLogEntryContext', function(html, entries) {
+
+    // Regenerate
+    entries.push({
+        name: "Regenerate",
+        icon: "<i class='fa fa-refresh' aria-hidden='true'></i>",
+        callback: function(menuItem) {
+            console.log('a thing')
+        },
+        condition: function(menuItem) {
+            return game.messages.get(menuItem.data().messageId).flags?.['gpt-flavor-text']?.gpt
+        }
+    });
+
+    // Edit Prompt
+    entries.push({
+        name: "Edit Prompt",
+        icon: "<i class='fa fa-pencil' aria-hidden='true'></i>",
+        callback: function(menuItem) {
+            console.log('a thing')
+        },
+        condition: function(menuItem) {
+            return game.messages.get(menuItem.data().messageId).flags?.['gpt-flavor-text']?.gpt
+        }
+    });
+
+});
+
 /*
 
 TODO - implement hooks for each
